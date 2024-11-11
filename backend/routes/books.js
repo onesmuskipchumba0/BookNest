@@ -1,8 +1,12 @@
 import express from "express";
 import mongoose from "mongoose";
 import Book from "../models/book.js";
+import dotenv from "dotenv"
+
+dotenv.config();
 
 const router = express.Router();
+
 
 mongoose.connect(process.env.MONGO_URI);
 
@@ -70,9 +74,13 @@ router.get("/:id", async (req, res) => {
 });
 
 // Get all books
-router.get("/books", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const books = await Book.find();
+
+    if (!books) {
+      res.status(404).json({ message: 'No books found' })
+    }
     res.json(books);
   } catch (error) {
     res.status(500).json({ message: error.message });
