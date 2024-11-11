@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "cors": "^2.8.5"
+  },
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
   }
 }

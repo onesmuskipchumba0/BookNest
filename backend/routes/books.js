@@ -10,38 +10,54 @@ const router = express.Router();
 
 mongoose.connect(process.env.MONGO_URI);
 
+// query by title
+router.get("/search", async (req, res) => {
+    const { q } = req.query;
+    if (!q || q.trim() === ''){
+        res.status(400).json({ message: 'Invalid search term' })
+    }
+    try {
+        const books = await Book.find({ title: { $regex: q, $options: 'i' } });
+        if (!books) {
+            res.status(404).json({ message: 'No books found' })
+        }
+        res.json(books);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 //Update a book
 router.put("/:id", async (req, res) => {
-    const { id } = req.params.id
+    const { id } = req.params
     const { title, author, publishYear, image } = req.body
 
-    if (!id || id.strip() === ''){
-        res.status(400).json({ message: 'Invalid id' })
+    if (!id || id.trim() === ''){
+        return res.status(400).json({ message: 'Invalid id' })
     }
     try {
         const result = await Book.findByIdAndUpdate(id, req.body)
         if (!result) {
-            res.status(404).json({ message: 'Book not found' })
+            return res.status(404).json({ message: 'Book not found' })
         }
-        res.status(200).json({ message: 'Book updated successfully' })
+        return res.status(200).json({ message: 'Book updated successfully' })
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 })
 // Delete a book
 router.delete("/:id", async (req, res) => {
-    const { id } = req.params.id
-    if (!id || id.strip() === ''){
-        res.status(400).json({ message: 'Invalid id' })
+    const { id } = req.params
+    if (!id || id.trim() === ''){
+        return res.status(400).json({ message: 'Invalid id' })
     }
     try {
-        await Book.findByIdAndDelete(id)
+        const result = await Book.findByIdAndDelete(id)
         if (!result) {
-            res.status(404).json({ message: 'Book not found' })
+            return res.status(404).json({ message: 'Book not found' })
         }
-        res.status(200).json({ message: 'Book deleted successfully' })
+        return res.status(200).json({ message: 'Book deleted successfully' })
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 })
 //Create a new book
@@ -57,12 +73,9 @@ router.post("/", async (req, res) => {
 })
 // Get a book by id
 router.get("/:id", async (req, res) => {
-    const { id } = req.params.id
+    const { id } = req.params
     try {
-        // check if id is valid
-        if (!id || id.strip() === ''){
-            res.status(400).json({ message: 'Invalid id' })
-        }
+        
         const book = await Book.findById(id)
         if (!book) {
             res.status(404).json({ message: 'Book not found' })
